@@ -127,10 +127,28 @@ class SSO
       $user->npm = $details['npm'];
       $user->org_code = $details['kd_org'];
 
-      $data = json_decode(file_get_contents( __DIR__ . '/additional-info.json'), true)[$user->org_code];
-      $user->faculty = $data['faculty'];
-      $user->study_program = $data['study_program'];
-      $user->educational_program = $data['educational_program'];
+      // Old
+      // $data = json_decode(file_get_contents( __DIR__ . '/additional-info.json'), true)[$user->org_code];
+      // $user->faculty = $data['faculty'];
+      // $user->study_program = $data['study_program'];
+      // $user->educational_program = $data['educational_program'];
+
+      // New
+      $token = "4c91d9f187caac74f0de852dca9dd99902fd1a30"; // Expired 2019-04-23 20:58:35
+      $header = array();
+      $header[] = 'Authorization: Bearer ' . $token . '-SSO_CAS_DEV';
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, "https://sso.ui.ac.id/rest/api/web/v1/mahasiswa/info");
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+      curl_setopt($ch, CURLOPT_POST, 1);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, "kd_mhs=" . $user->npm);
+      $response = curl_exec($ch);
+      curl_close($ch);
+      $data = json_decode($response,true)['data'];
+      $user->faculty = $data['nm_fakultas'];
+      $user->study_program = $data['nm_prodi'];
+      $user->educational_program = $data['jenjang'];
     }
     else if ($user->role === 'staff') {
       $user->nip = $details['nip'];
